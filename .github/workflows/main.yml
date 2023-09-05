@@ -1,18 +1,8 @@
 on:
   workflow_dispatch:
     inputs:
-      jira-base-url:
-        description: The Jira base url
-        required: true
-        type: string
-    
-      jira-user-email:
-        description: The Jira user email
-        required: true
-        type: string
-    
-      jira-api-token:
-        description: The Jira API token for the specified user email
+      jira-project-key:
+        description: The project key prefix to look for - or the full story key.
         required: true
         type: string
 
@@ -28,9 +18,10 @@ jobs:
         name: Get summary from Jira
         uses: ./
         with:
-          jira-base-url: ${{ inputs.jira-base-url }}
-          jira-user-email: ${{ inputs.jira-user-email }}
-          jira-api-token: ${{ inputs.jira-api-token }}
+          jira-base-url: ${{ secrets.JIRA_BASE_URL }}
+          jira-user-email: ${{ secrets.JIRA_USER_EMAIL }}
+          jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
+          jira-project-key: ${{ inputs.jira-project-key }}
       
       - name: Print the summary
         run: echo "The title is ${{ steps.story.outputs.title }}"
