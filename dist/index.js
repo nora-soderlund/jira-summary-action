@@ -54,6 +54,7 @@ async function execute() {
                 break;
             }
         }
+        console.log("jira key: " + jiraKey);
         if (jiraKey.includes('-'))
             return (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
     }
