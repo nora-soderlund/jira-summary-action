@@ -50,8 +50,8 @@ async function execute() {
     }
   }
 
-  const payload = JSON.stringify(context.payload, undefined, 2);
-  
+  console.debug("Getting the story detail from Jira...");
+
   const issueDetails = await getIssueDetails(jiraKey);
 
   const description = adf2md.convert(issueDetails.fields.description);
@@ -60,6 +60,8 @@ async function execute() {
   setOutput("description", description.result);
 
   if(context.payload.pull_request) {
+    console.debug("Checking for existing story comment...");
+
     const comments = await octokit.rest.issues.listComments({
       ...context.repo,
       issue_number: context.payload.pull_request.number
@@ -91,7 +93,15 @@ async function execute() {
       `[^${issueDetails.fields.description.version}]: Version ${issueDetails.fields.description.version}`
     ].join('\n');
 
-    if(existingComment && existingComment.body !== body) {
+    if(existingComment) {
+      console.debug("Existing comment exists for story.");
+
+      if(existingComment.body === body) {
+        console.info("Skipping updating previous comment because content is the same.");
+
+        return;
+      }
+
       await octokit.rest.issues.updateComment({
         ...context.repo,
         comment_id: existingComment.id,
@@ -99,6 +109,8 @@ async function execute() {
       });
     }
     else {
+      console.debug("Creating a new comment with story summary...");
+
       await octokit.rest.issues.createComment({
         ...context.repo,
         issue_number: context.payload.pull_request.number,
