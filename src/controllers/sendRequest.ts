@@ -7,7 +7,7 @@ export default async function sendRequest<T = Record<string, unknown>>(method: s
   const response = await fetch(url, {
     method,
     headers: {
-      "Authorization": `Bearer ${getInputToken()}`,
+      "Authorization": `Basic ${getInputToken()}`,
       "Accept": "application/json",
       "Content-Type": "application/json"
     }
@@ -25,7 +25,7 @@ export default async function sendRequest<T = Record<string, unknown>>(method: s
     try {
       const body = await response.json();
 
-      throw new Error("Something went wrong: " + response.status + response.statusText + "\n" + body);
+      throw new Error("Something went wrong: " + response.status + " " + response.statusText + "\n" + body);
     }
     catch {
       throw new Error("Something went wrong: " + response.status + response.statusText);

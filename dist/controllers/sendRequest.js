@@ -10,7 +10,7 @@ async function sendRequest(method, path) {
     const response = await fetch(url, {
         method,
         headers: {
-            "Authorization": `Bearer ${(0, getInputToken_1.default)()}`,
+            "Authorization": `Basic ${(0, getInputToken_1.default)()}`,
             "Accept": "application/json",
             "Content-Type": "application/json"
         }
@@ -24,7 +24,7 @@ async function sendRequest(method, path) {
         }
         try {
             const body = await response.json();
-            throw new Error("Something went wrong: " + response.status + response.statusText + "\n" + body);
+            throw new Error("Something went wrong: " + response.status + " " + response.statusText + "\n" + body);
         }
         catch {
             throw new Error("Something went wrong: " + response.status + response.statusText);
