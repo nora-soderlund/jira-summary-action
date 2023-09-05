@@ -1,6 +1,8 @@
 # jira-summary-action
 This is a GitHub Action that allows you to fetch the summary and description of a story in Jira and comment it in a pull request, together with a link to the story. This is a tool to improve developer efficieny.
 
+![image](https://github.com/nora-soderlund/jira-summary-action/assets/78360666/f38e0d24-e8b0-43fa-a2e3-4e01aca0c9d5)
+
 ## Getting started
 Add the action to your pull request workflow, which searches for Jira story keys with the project key `ABC`:
 ```yml
