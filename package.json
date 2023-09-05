@@ -1,0 +1,33 @@
+{
+  "name": "jira-summary-action",
+  "version": "0.9.0",
+  "description": "A GitHub Action that posts the summary of a linked Jira story in pull requests.",
+  "main": "dist/index.js",
+  "scripts": {
+    "start": "npx tsc -w",
+    "build": "npx tsc"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nora-soderlund/jira-summary-action.git"
+  },
+  "keywords": [
+    "jira",
+    "summary",
+    "github",
+    "actions"
+  ],
+  "author": "Nora Söderlund",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nora-soderlund/jira-summary-action/issues"
+  },
+  "homepage": "https://github.com/nora-soderlund/jira-summary-action#readme",
+  "dependencies": {
+    "@actions/core": "^1.10.0",
+    "@actions/github": "^5.1.1"
+  },
+  "devDependencies": {
+    "typescript": "^5.2.2"
+  }
+}

@@ -1,0 +1,33 @@
+on:
+  workflow_dispatch:
+    inputs:
+      jira-base-url:
+        description: The Jira base url
+        required: true
+    
+      jira-user-email:
+        description: The Jira user email
+        required: true
+    
+      jira-api-token:
+        description: The Jira API token for the specified user email
+        required: true
+
+jobs:
+  run-jira-summary-action:
+    runs-on: ubuntu-latest
+    name: Get Jira story summary
+    steps:
+      - name: Checkout the branch
+        uses: actions/checkout@v3
+      
+      - id: story
+        name: Get summary from Jira
+        uses: ./
+        with:
+          jira-base-url: ${{ inputs.jira-base-url }}
+          jira-user-email: ${{ inputs.jira-user-email }}
+          jira-api-token: ${{ inputs.jira-api-token }}
+      
+      - name: Print the summary
+        run: echo "The title is ${{ steps.story.outputs.title }}"

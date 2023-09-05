@@ -1,0 +1,22 @@
+name: Jira summary Action
+description: Posts a comment with the summary of a linked Jira story.
+inputs:
+  jira-base-url:
+    description: The Jira base url
+    required: true
+
+  jira-user-email:
+    description: The Jira user email
+    required: true
+
+  jira-api-token:
+    description: The Jira API token for the specified user email
+    required: true
+
+outputs:
+  title:
+    description: The title of the Jira story
+
+runs:
+  using: node18
+  main: dist/index.js
