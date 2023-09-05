@@ -39,7 +39,7 @@ async function execute() {
 
     console.log("jira key: " + jiraKey);
 
-    if(jiraKey.includes('-'))
+    if(!jiraKey.includes('-'))
       return setFailed("Failed to find a Jira key starting with " + jiraKey);
   }
 

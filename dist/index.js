@@ -55,7 +55,7 @@ async function execute() {
             }
         }
         console.log("jira key: " + jiraKey);
-        if (jiraKey.includes('-'))
+        if (!jiraKey.includes('-'))
             return (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
     }
     const payload = JSON.stringify(github_1.context.payload, undefined, 2);
