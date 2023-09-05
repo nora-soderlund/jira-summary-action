@@ -21,6 +21,10 @@ inputs:
     description: The GitHub Token to use, e.g. GITHUB_TOKEN
     required: true
 
+  JIRA_KEY_MULTIPLE:
+    description: If true and JIRA_KEY is a project key, post a comment for every story key found.
+    default: false
+
   JIRA_PARTIAL_KEY_SILENT_FAILURE:
     description: If true, not finding a story key in a pull request if a project key is specified, only throws a silent error.
     default: false

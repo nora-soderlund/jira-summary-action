@@ -32,40 +32,9 @@ const getIssueDetails_1 = __importDefault(require("./controllers/issues/getIssue
 //@ts-expect-error
 const adf2md = __importStar(require("adf-to-md"));
 const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
-async function execute() {
-    let jiraKey = (0, core_1.getInput)("JIRA_KEY");
-    if (!jiraKey.includes('-')) {
-        if (!github_1.context.payload.pull_request)
-            return (0, core_1.setFailed)("Partial Jira key can only be used in pull requests!");
-        const pullRequest = await octokit.rest.pulls.get({
-            ...github_1.context.repo,
-            pull_number: github_1.context.payload.pull_request.number,
-        });
-        const inputs = [
-            pullRequest.data.head.ref,
-            pullRequest.data.title,
-            pullRequest.data.body
-        ];
-        const regex = new RegExp(`${jiraKey}-([0-9]{1,6})`, 'g');
-        for (let input of inputs) {
-            const matches = regex.exec(input ?? "");
-            if (matches?.length) {
-                jiraKey = matches[0];
-                break;
-            }
-        }
-        if (!jiraKey.includes('-')) {
-            if ((0, core_1.getInput)("JIRA_PARTIAL_KEY_SILENT_FAILURE")) {
-                console.error("Failed to find a Jira key starting with " + jiraKey);
-                console.info("Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true.");
-            }
-            else
-                (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
-            return;
-        }
-    }
+async function execute(storyKey) {
     console.debug("Getting the story detail from Jira...");
-    const issueDetails = await (0, getIssueDetails_1.default)(jiraKey);
+    const issueDetails = await (0, getIssueDetails_1.default)(storyKey);
     const description = adf2md.convert(issueDetails.fields.description);
     (0, core_1.setOutput)("title", issueDetails.fields.summary);
     (0, core_1.setOutput)("description", description.result);
@@ -119,8 +88,51 @@ async function execute() {
     }
 }
 ;
+async function init() {
+    const jiraKey = (0, core_1.getInput)("JIRA_KEY");
+    if (!jiraKey.includes('-')) {
+        if (!github_1.context.payload.pull_request)
+            return (0, core_1.setFailed)("Partial Jira key can only be used in pull requests!");
+        const pullRequest = await octokit.rest.pulls.get({
+            ...github_1.context.repo,
+            pull_number: github_1.context.payload.pull_request.number,
+        });
+        const inputs = [
+            pullRequest.data.head.ref,
+            pullRequest.data.title,
+            pullRequest.data.body
+        ];
+        const regex = new RegExp(`${jiraKey}-([0-9]{1,6})`, 'g');
+        const storyKeys = [];
+        for (let input of inputs) {
+            const matches = regex.exec(input ?? "");
+            if (matches?.length) {
+                storyKeys.push(matches[0]);
+                continue;
+            }
+        }
+        if (!storyKeys.length) {
+            if ((0, core_1.getInput)("JIRA_PARTIAL_KEY_SILENT_FAILURE")) {
+                console.error("Failed to find a Jira key starting with " + jiraKey);
+                console.info("Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true.");
+            }
+            else
+                (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
+            return;
+        }
+        if ((0, core_1.getInput)("JIRA_KEY_MULTIPLE")) {
+            for (let storyKey of storyKeys)
+                execute(storyKey);
+        }
+        else
+            execute(storyKeys[0]);
+    }
+    else
+        execute(jiraKey);
+}
+;
 try {
-    execute();
+    init();
 }
 catch (error) {
     if (error instanceof Error || typeof error === "string")
