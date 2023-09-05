@@ -1,20 +1,20 @@
-import * as core from "@actions/core";
-import * as github from "@actions/github/lib/utils";
+import { getInput, setFailed, setOutput } from "@actions/core";
+import { context } from "@actions/github";
 
 try {
-  const jiraBaseUrl = core.getInput("jira-base-url");
-  const jiraUserEmail = core.getInput("jira-user-email");
-  const jiraApiToken = core.getInput("jira-api-token");
+  const jiraBaseUrl = getInput("jira-base-url");
+  const jiraUserEmail = getInput("jira-user-email");
+  const jiraApiToken = getInput("jira-api-token");
 
-  core.setOutput("title", "Hello world!");
+  setOutput("title", "Hello world!");
   
-  const payload = JSON.stringify(github.context.payload, undefined, 2);
-
+  const payload = JSON.stringify(context.payload, undefined, 2);
+  
   console.log(`The event payload: ${payload}`);
 }
 catch(error) {
   if(error instanceof Error || typeof error === "string")
-    core.setFailed(error);
+    setFailed(error);
   else
-    core.setFailed("Unknown error: " + error);
+    setFailed("Unknown error: " + error);
 }
