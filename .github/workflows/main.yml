@@ -1,17 +1,20 @@
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       jira-base-url:
         description: The Jira base url
         required: true
+        type: string
     
       jira-user-email:
         description: The Jira user email
         required: true
+        type: string
     
       jira-api-token:
         description: The Jira API token for the specified user email
         required: true
+        type: string
 
 jobs:
   run-jira-summary-action:
