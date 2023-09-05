@@ -4,7 +4,7 @@ import getInputToken from "./controllers/getInputToken";
 import getIssueDetails from "./controllers/issues/getIssueDetails";
 
 //@ts-expect-error
-import adf2md from "adf-to-md";
+import * as adf2md from "adf-to-md";
 
 try {
   const jiraKey = getInput("jira-key");
