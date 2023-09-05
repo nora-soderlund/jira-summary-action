@@ -8,6 +8,7 @@ jobs:
     name: Get Jira story summary
     permissions:
       contents: read
+      pull-requests: write
       issues: write
     steps:
       - name: Checkout the branch
