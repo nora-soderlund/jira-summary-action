@@ -6,6 +6,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@actions/core");
 const github_1 = require("@actions/github");
 const getIssueDetails_1 = __importDefault(require("./controllers/issues/getIssueDetails"));
+//@ts-expect-error
+const adf_to_md_1 = __importDefault(require("adf-to-md"));
 try {
     const jiraKey = (0, core_1.getInput)("jira-key");
     if (!jiraKey.includes('-'))
@@ -14,6 +16,8 @@ try {
     console.log(`The event payload: ${payload}`);
     (0, getIssueDetails_1.default)(jiraKey).then((issueDetails) => {
         console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
+        const description = (0, adf_to_md_1.default)(issueDetails.description);
+        console.log("Markdown: " + description);
         (0, core_1.setOutput)("title", "Hello world!");
     });
 }
