@@ -31,19 +31,38 @@ const github_1 = require("@actions/github");
 const getIssueDetails_1 = __importDefault(require("./controllers/issues/getIssueDetails"));
 //@ts-expect-error
 const adf2md = __importStar(require("adf-to-md"));
+const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
 async function execute() {
-    const jiraKey = (0, core_1.getInput)("JIRA_KEY");
-    if (!jiraKey.includes('-'))
-        throw new Error("Feature not implemented.");
+    let jiraKey = (0, core_1.getInput)("JIRA_KEY");
+    if (!jiraKey.includes('-')) {
+        if (!github_1.context.payload.pull_request)
+            return (0, core_1.setFailed)("Partial Jira key can only be used in pull requests!");
+        const pullRequest = await octokit.rest.pulls.get({
+            ...github_1.context.repo,
+            pull_number: github_1.context.payload.pull_request.number,
+        });
+        const inputs = [
+            pullRequest.data.head.ref,
+            pullRequest.data.title,
+            pullRequest.data.body
+        ];
+        const regex = new RegExp(`/${jiraKey}-[0-9-]{1-6}/`);
+        for (let input of inputs) {
+            const matches = regex.exec(input ?? "");
+            if (matches?.length) {
+                jiraKey = matches[0];
+                break;
+            }
+        }
+        if (jiraKey.includes('-'))
+            return (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
+    }
     const payload = JSON.stringify(github_1.context.payload, undefined, 2);
-    console.log(`The event payload: ${payload}`);
     const issueDetails = await (0, getIssueDetails_1.default)(jiraKey);
     const description = adf2md.convert(issueDetails.fields.description);
     (0, core_1.setOutput)("title", issueDetails.fields.summary);
     (0, core_1.setOutput)("description", description.result);
-    console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
     if (github_1.context.payload.pull_request) {
-        const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
         const comments = await octokit.rest.issues.listComments({
             ...github_1.context.repo,
             issue_number: github_1.context.payload.pull_request.number

@@ -5,16 +5,44 @@ import getIssueDetails from "./controllers/issues/getIssueDetails";
 //@ts-expect-error
 import * as adf2md from "adf-to-md";
 
+const octokit = getOctokit(getInput("GITHUB_TOKEN"));
+
 async function execute() {
-  const jiraKey = getInput("JIRA_KEY");
+  let jiraKey = getInput("JIRA_KEY");
   
-  if(!jiraKey.includes('-'))
-    throw new Error("Feature not implemented.");
+  if(!jiraKey.includes('-')) {
+    if(!context.payload.pull_request)
+      return setFailed("Partial Jira key can only be used in pull requests!");
+
+    const pullRequest = await octokit.rest.pulls.get({
+      ...context.repo,
+      pull_number: context.payload.pull_request.number,
+    });
+
+    const inputs = [
+      pullRequest.data.head.ref,
+      pullRequest.data.title,
+      pullRequest.data.body
+    ];
+
+    const regex = new RegExp(`/${jiraKey}-[0-9-]{1-6}/`);
+
+    for(let input of inputs) {
+      const matches = regex.exec(input ?? "");
+
+      if(matches?.length) {
+        jiraKey = matches[0];
+
+        break;
+      }
+    }
+
+    if(jiraKey.includes('-'))
+      return setFailed("Failed to find a Jira key starting with " + jiraKey);
+  }
 
   const payload = JSON.stringify(context.payload, undefined, 2);
   
-  console.log(`The event payload: ${payload}`);
-
   const issueDetails = await getIssueDetails(jiraKey);
 
   const description = adf2md.convert(issueDetails.fields.description);
@@ -22,11 +50,7 @@ async function execute() {
   setOutput("title", issueDetails.fields.summary);
   setOutput("description", description.result);
 
-  console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
-
   if(context.payload.pull_request) {
-    const octokit = getOctokit(getInput("GITHUB_TOKEN"));
-
     const comments = await octokit.rest.issues.listComments({
       ...context.repo,
       issue_number: context.payload.pull_request.number
