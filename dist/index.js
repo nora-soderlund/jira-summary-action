@@ -61,6 +61,8 @@ async function execute() {
             return true;
         });
         if (existingComment) {
+            if (existingComment.body?.includes(`[^${issueDetails.fields.description.version}]`))
+                return;
             const existingCommentLines = existingComment.body.split('\n');
             let existingCommentBody;
             if (existingCommentLines.find((line) => line === "---")) {

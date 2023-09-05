@@ -52,6 +52,9 @@ async function execute() {
     });
 
     if(existingComment) {
+      if(existingComment.body?.includes(`[^${issueDetails.fields.description.version}]`))
+        return;
+
       const existingCommentLines = existingComment.body!.split('\n');
 
       let existingCommentBody: string[];
