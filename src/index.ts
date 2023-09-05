@@ -102,7 +102,7 @@ async function execute() {
     else {
       const body = [
         `## [${issueDetails.key}](${getInput("jira-base-url")}/browse/${issueDetails.key})`,
-        `### ${issueDetails.fields.summary} [^${issueDetails.fields.description.version}]`,
+        `### ${issueDetails.fields.summary}`,
         description.result,
         "",
         `[^${issueDetails.fields.description.version}]: Version ${issueDetails.fields.description.version}`

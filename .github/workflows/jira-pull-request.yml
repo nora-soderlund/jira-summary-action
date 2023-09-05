@@ -1,4 +1,5 @@
 on:
+  pull_request_comment:
   pull_request:
     types: [ opened, closed, synchronize, edited ]
 
