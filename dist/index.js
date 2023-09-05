@@ -39,7 +39,7 @@ try {
     console.log(`The event payload: ${payload}`);
     (0, getIssueDetails_1.default)(jiraKey).then((issueDetails) => {
         console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
-        const description = adf2md(issueDetails.description);
+        const description = adf2md.convert(issueDetails.description);
         console.log("Markdown: " + description);
         (0, core_1.setOutput)("title", "Hello world!");
     });

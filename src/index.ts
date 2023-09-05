@@ -19,7 +19,7 @@ try {
   getIssueDetails(jiraKey).then((issueDetails) => {
     console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
 
-    const description = adf2md(issueDetails.description);
+    const description = adf2md.convert(issueDetails.description);
 
     console.log("Markdown: " + description);
 
