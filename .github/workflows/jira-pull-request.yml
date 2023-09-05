@@ -6,6 +6,8 @@ jobs:
   run-jira-summary-action:
     runs-on: ubuntu-latest
     name: Get Jira story summary
+    permissions:
+      issues: write
     steps:
       - name: Checkout the branch
         uses: actions/checkout@v3
