@@ -36,12 +36,12 @@ async function execute(storyKey) {
     console.debug("Getting the story detail from Jira...");
     const issueDetails = await (0, getIssueDetails_1.default)(storyKey);
     const description = adf2md.convert(issueDetails.fields.description);
-    if (!(0, core_1.getInput)("JIRA_KEY_MULTIPLE")) {
+    if ((0, core_1.getInput)("JIRA_KEY_MULTIPLE") !== "") {
         (0, core_1.setOutput)("title", issueDetails.fields.summary);
         (0, core_1.setOutput)("description", description.result);
     }
     if (github_1.context.payload.pull_request) {
-        if ((0, core_1.getInput)("DISABLE_PULL_REQUEST_COMMENT")) {
+        if ((0, core_1.getInput)("DISABLE_PULL_REQUEST_COMMENT") !== "") {
             console.info("Not creating or update any comments because DISABLE_PULL_REQUEST_COMMENT is true.");
             return;
         }
@@ -114,7 +114,7 @@ async function init() {
             }
         }
         if (!storyKeys.length) {
-            if ((0, core_1.getInput)("JIRA_PARTIAL_KEY_SILENT_FAILURE")) {
+            if ((0, core_1.getInput)("JIRA_PARTIAL_KEY_SILENT_FAILURE") !== "") {
                 console.error("Failed to find a Jira key starting with " + jiraKey);
                 console.info("Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true.");
             }
@@ -122,7 +122,7 @@ async function init() {
                 (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
             return;
         }
-        if ((0, core_1.getInput)("JIRA_KEY_MULTIPLE")) {
+        if ((0, core_1.getInput)("JIRA_KEY_MULTIPLE") !== "") {
             for (let storyKey of storyKeys)
                 execute(storyKey);
         }

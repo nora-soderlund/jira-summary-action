@@ -14,13 +14,13 @@ async function execute(storyKey: string) {
 
   const description = adf2md.convert(issueDetails.fields.description);
 
-  if(!getInput("JIRA_KEY_MULTIPLE")) {
+  if(getInput("JIRA_KEY_MULTIPLE") !== "") {
     setOutput("title", issueDetails.fields.summary);
     setOutput("description", description.result);
   }
   
   if(context.payload.pull_request) {
-    if(getInput("DISABLE_PULL_REQUEST_COMMENT")) {
+    if(getInput("DISABLE_PULL_REQUEST_COMMENT") !== "") {
       console.info("Not creating or update any comments because DISABLE_PULL_REQUEST_COMMENT is true.");
 
       return;
@@ -117,7 +117,7 @@ async function init() {
     }
 
     if(!storyKeys.length) {
-      if(getInput("JIRA_PARTIAL_KEY_SILENT_FAILURE")) {
+      if(getInput("JIRA_PARTIAL_KEY_SILENT_FAILURE") !== "") {
         console.error("Failed to find a Jira key starting with " + jiraKey);
 
         console.info("Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true.");
@@ -128,7 +128,7 @@ async function init() {
       return;
     }
 
-    if(getInput("JIRA_KEY_MULTIPLE")) {
+    if(getInput("JIRA_KEY_MULTIPLE") !== "") {
       for(let storyKey of storyKeys)
         execute(storyKey);
     }
