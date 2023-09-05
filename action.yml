@@ -13,7 +13,7 @@ inputs:
     description: The Jira API token for the specified user email
     required: true
 
-  jira-project-key:
+  jira-key:
     description: The project key prefix to look for - or the full story key.
     required: true
 
