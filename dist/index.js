@@ -54,9 +54,15 @@ async function execute() {
                 break;
             }
         }
-        console.log("jira key: " + jiraKey);
-        if (!jiraKey.includes('-'))
-            return (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
+        if (!jiraKey.includes('-')) {
+            if ((0, core_1.getInput)("JIRA_KEY_SILENT")) {
+                console.error("Failed to find a Jira key starting with " + jiraKey);
+                console.info("Executing silent error because JIRA_KEY_SILENT is true.");
+            }
+            else
+                (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
+            return;
+        }
     }
     const payload = JSON.stringify(github_1.context.payload, undefined, 2);
     const issueDetails = await (0, getIssueDetails_1.default)(jiraKey);

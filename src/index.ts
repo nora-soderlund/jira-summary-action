@@ -37,10 +37,17 @@ async function execute() {
       }
     }
 
-    console.log("jira key: " + jiraKey);
+    if(!jiraKey.includes('-')) {
+      if(getInput("JIRA_KEY_SILENT")) {
+        console.error("Failed to find a Jira key starting with " + jiraKey);
 
-    if(!jiraKey.includes('-'))
-      return setFailed("Failed to find a Jira key starting with " + jiraKey);
+        console.info("Executing silent error because JIRA_KEY_SILENT is true.");
+      }
+      else
+        setFailed("Failed to find a Jira key starting with " + jiraKey);
+
+      return;
+    }
   }
 
   const payload = JSON.stringify(context.payload, undefined, 2);
