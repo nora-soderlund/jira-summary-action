@@ -25,7 +25,7 @@ async function execute() {
       pullRequest.data.body
     ];
 
-    const regex = new RegExp(`/${jiraKey}-[0-9-]{1-6}\\w/g`);
+    const regex = new RegExp(`${jiraKey}-[0-9-]{1-6}\\w`, 'g');
 
     for(let input of inputs) {
       const matches = regex.exec(input ?? "");
