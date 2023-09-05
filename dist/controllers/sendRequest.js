@@ -8,7 +8,7 @@ const getInputToken_1 = __importDefault(require("./getInputToken"));
 async function sendRequest(method, path) {
     const url = new URL(path, (0, core_1.getInput)("jira-base-url"));
     const response = await fetch(url, {
-        method: "GET",
+        method,
         headers: {
             "Authorization": `Bearer ${(0, getInputToken_1.default)()}`,
             "Accept": "application/json",
@@ -22,7 +22,13 @@ async function sendRequest(method, path) {
             case 404:
                 throw new Error("The requested resource does not exist.");
         }
-        throw new Error("Something went wrong: " + response.statusText);
+        try {
+            const body = await response.json();
+            throw new Error("Something went wrong: " + response.status + response.statusText + "\n" + body);
+        }
+        catch {
+            throw new Error("Something went wrong: " + response.status + response.statusText);
+        }
     }
     return await response.json();
 }

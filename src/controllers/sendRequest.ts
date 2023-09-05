@@ -5,7 +5,7 @@ export default async function sendRequest<T = Record<string, unknown>>(method: s
   const url = new URL(path, getInput("jira-base-url"));
 
   const response = await fetch(url, {
-    method: "GET",
+    method,
     headers: {
       "Authorization": `Bearer ${getInputToken()}`,
       "Accept": "application/json",
@@ -21,8 +21,15 @@ export default async function sendRequest<T = Record<string, unknown>>(method: s
       case 404:
         throw new Error("The requested resource does not exist.");
     }
-    
-    throw new Error("Something went wrong: " + response.statusText);
+
+    try {
+      const body = await response.json();
+
+      throw new Error("Something went wrong: " + response.status + response.statusText + "\n" + body);
+    }
+    catch {
+      throw new Error("Something went wrong: " + response.status + response.statusText);
+    }    
   }
 
   return await response.json();
