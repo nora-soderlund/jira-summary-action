@@ -18,7 +18,7 @@ inputs:
     required: true
 
   github-token:
-    description: The GitHub Token to use, e.g. ${{ secrets.GITHUB_TOKEN }}
+    description: The GitHub Token to use, e.g. GITHUB_TOKEN
     required: true
 
 outputs:
