@@ -1,5 +1,5 @@
-name: Jira summary Action
-description: Posts a comment with the summary of a linked Jira story.
+name: nora-soderlund/jira-summary-action
+description: Posts a pull request comment with the summary of linked Jira stories.
 inputs:
   JIRA_BASE_URL:
     description: The Jira base url
@@ -35,7 +35,10 @@ inputs:
 
 outputs:
   title:
-    description: The title of the Jira story
+    description: The title of the Jira story.
+
+  description:
+    description: The description of the Jira story in markdown.
 
 runs:
   using: node20

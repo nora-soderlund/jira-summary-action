@@ -14,8 +14,10 @@ async function execute(storyKey: string) {
 
   const description = adf2md.convert(issueDetails.fields.description);
 
-  setOutput("title", issueDetails.fields.summary);
-  setOutput("description", description.result);
+  if(!getInput("JIRA_KEY_MULTIPLE")) {
+    setOutput("title", issueDetails.fields.summary);
+    setOutput("description", description.result);
+  }
   
   if(context.payload.pull_request) {
     if(getInput("DISABLE_PULL_REQUEST_COMMENT")) {

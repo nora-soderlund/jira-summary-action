@@ -36,8 +36,10 @@ async function execute(storyKey) {
     console.debug("Getting the story detail from Jira...");
     const issueDetails = await (0, getIssueDetails_1.default)(storyKey);
     const description = adf2md.convert(issueDetails.fields.description);
-    (0, core_1.setOutput)("title", issueDetails.fields.summary);
-    (0, core_1.setOutput)("description", description.result);
+    if (!(0, core_1.getInput)("JIRA_KEY_MULTIPLE")) {
+        (0, core_1.setOutput)("title", issueDetails.fields.summary);
+        (0, core_1.setOutput)("description", description.result);
+    }
     if (github_1.context.payload.pull_request) {
         if ((0, core_1.getInput)("DISABLE_PULL_REQUEST_COMMENT")) {
             console.info("Not creating or update any comments because DISABLE_PULL_REQUEST_COMMENT is true.");
