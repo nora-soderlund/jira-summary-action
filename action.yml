@@ -17,6 +17,10 @@ inputs:
     description: The project key prefix to look for - or the full story key.
     required: true
 
+  github-token:
+    description: The GitHub Token to use, e.g. ${{ secrets.GITHUB_TOKEN }}
+    required: true
+
 outputs:
   title:
     description: The title of the Jira story

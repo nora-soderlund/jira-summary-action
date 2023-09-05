@@ -26,7 +26,7 @@ async function execute() {
   console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
 
   if(context.payload.pull_request) {
-    const octokit = getOctokit(getInput("GITHUB_TOKEN"));
+    const octokit = getOctokit(getInput("github-token"));
 
     const comments = await octokit.rest.issues.listComments({
       ...context.repo,
