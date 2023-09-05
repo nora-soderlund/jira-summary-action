@@ -7,6 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Get Jira story summary
     permissions:
+      contents: read
       issues: write
     steps:
       - name: Checkout the branch
