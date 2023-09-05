@@ -55,9 +55,9 @@ async function execute() {
             }
         }
         if (!jiraKey.includes('-')) {
-            if ((0, core_1.getInput)("JIRA_KEY_SILENT")) {
+            if ((0, core_1.getInput)("JIRA_PARTIAL_KEY_SILENT_FAILURE")) {
                 console.error("Failed to find a Jira key starting with " + jiraKey);
-                console.info("Executing silent error because JIRA_KEY_SILENT is true.");
+                console.info("Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true.");
             }
             else
                 (0, core_1.setFailed)("Failed to find a Jira key starting with " + jiraKey);
@@ -70,6 +70,10 @@ async function execute() {
     (0, core_1.setOutput)("title", issueDetails.fields.summary);
     (0, core_1.setOutput)("description", description.result);
     if (github_1.context.payload.pull_request) {
+        if ((0, core_1.getInput)("DISABLE_PULL_REQUEST_COMMENT")) {
+            console.info("Not creating or update any comments because DISABLE_PULL_REQUEST_COMMENT is true.");
+            return;
+        }
         console.debug("Checking for existing story comment...");
         const comments = await octokit.rest.issues.listComments({
             ...github_1.context.repo,
@@ -90,9 +94,7 @@ async function execute() {
         const body = [
             `## [${issueDetails.key}](${(0, core_1.getInput)("JIRA_BASE_URL")}/browse/${issueDetails.key})`,
             `### ${issueDetails.fields.summary}`,
-            description.result,
-            "",
-            `[^${issueDetails.fields.description.version}]: Version ${issueDetails.fields.description.version}`
+            description.result
         ].join('\n');
         if (existingComment) {
             console.debug("Existing comment exists for story.");
