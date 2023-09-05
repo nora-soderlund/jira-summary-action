@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core_1 = require("@actions/core");
 const getInputToken_1 = __importDefault(require("./getInputToken"));
 async function sendRequest(method, path) {
-    const url = new URL(path, (0, core_1.getInput)("jira-base-url"));
+    const url = new URL(path, (0, core_1.getInput)("JIRA_BASE_URL"));
     const response = await fetch(url, {
         method,
         headers: {

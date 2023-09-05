@@ -1,11 +1,15 @@
 on:
   pull_request:
-    types: [ opened, closed, synchronize, edited ]
+    types: [ opened, reopened, edited ]
 
 jobs:
   run-jira-summary-action:
     runs-on: ubuntu-latest
     name: Get Jira story summary
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
     steps:
       - name: Checkout the branch
         uses: actions/checkout@v3
@@ -14,10 +18,11 @@ jobs:
         name: Get summary from Jira
         uses: ./
         with:
-          jira-base-url: ${{ secrets.JIRA_BASE_URL }}
-          jira-user-email: ${{ secrets.JIRA_USER_EMAIL }}
-          jira-api-token: ${{ secrets.JIRA_API_TOKEN }}
-          jira-key: OM20-1075
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
+          JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
+          JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
+          JIRA_KEY: OM20
       
       - name: Print the summary
         run: echo "The title is ${{ steps.story.outputs.title }}"

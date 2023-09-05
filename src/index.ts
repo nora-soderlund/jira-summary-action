@@ -1,32 +1,30 @@
 import { getInput, setFailed, setOutput } from "@actions/core";
 import { getOctokit, context } from "@actions/github";
-import getInputToken from "./controllers/getInputToken";
 import getIssueDetails from "./controllers/issues/getIssueDetails";
 
 //@ts-expect-error
 import * as adf2md from "adf-to-md";
 
-async function execute() {
-  const jiraKey = getInput("jira-key");
-  
-  if(!jiraKey.includes('-'))
-    throw new Error("Feature not implemented.");
+const octokit = getOctokit(getInput("GITHUB_TOKEN"));
 
-  const payload = JSON.stringify(context.payload, undefined, 2);
-  
-  console.log(`The event payload: ${payload}`);
+async function execute(storyKey: string) {
+  console.debug("Getting the story detail from Jira...");
 
-  const issueDetails = await getIssueDetails(jiraKey);
+  const issueDetails = await getIssueDetails(storyKey);
 
   const description = adf2md.convert(issueDetails.fields.description);
 
   setOutput("title", issueDetails.fields.summary);
   setOutput("description", description.result);
-
-  console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
-
+  
   if(context.payload.pull_request) {
-    const octokit = getOctokit(getInput("GITHUB_TOKEN"));
+    if(getInput("DISABLE_PULL_REQUEST_COMMENT")) {
+      console.info("Not creating or update any comments because DISABLE_PULL_REQUEST_COMMENT is true.");
+
+      return;
+    }
+
+    console.debug("Checking for existing story comment...");
 
     const comments = await octokit.rest.issues.listComments({
       ...context.repo,
@@ -51,62 +49,29 @@ async function execute() {
       return true;
     });
 
+    const body = [
+      `## [${issueDetails.key}](${getInput("JIRA_BASE_URL")}/browse/${issueDetails.key})`,
+      `### ${issueDetails.fields.summary}`,
+      description.result
+    ].join('\n');
+
     if(existingComment) {
-      const existingCommentLines = existingComment.body!.split('\n');
+      console.debug("Existing comment exists for story.");
 
-      let existingCommentBody: string[];
+      if(existingComment.body === body) {
+        console.info("Skipping updating previous comment because content is the same.");
 
-      if(existingCommentLines.find((line) => line === "---")) {
-        const summaryLineIndex = existingCommentLines.findIndex((line) => line === '<summary>Previous story versions</summary>');
-
-        existingCommentBody = [
-          ...existingCommentLines.slice(1),
-          "",
-          ...existingCommentLines.slice(summaryLineIndex, existingCommentLines.length - 1)
-        ];
+        return;
       }
-      else {
-        const currentCommentBody = existingCommentLines.slice(1);
-        currentCommentBody[0] += ` [^${issueDetails.fields.description.version - 1}]`;
-
-        existingCommentBody = [
-          ...currentCommentBody.map((line) => "> " + line),
-          "",
-          ...existingCommentLines.slice(1).map((line) => '> ' + line)
-        ];
-      }
-      
-
-      const body = [
-        `## [${issueDetails.key}](${getInput("jira-base-url")}/browse/${issueDetails.key})`,
-        `### ${issueDetails.fields.summary} [^${issueDetails.fields.description.version}]`,
-        description.result,
-        "",
-        ...Array(issueDetails.fields.description.version).fill(null).map((_, index) => {
-          return `[^${index + 1}]: Version ${index + 1}`;
-        }),
-        "",
-        `<details>`,
-        `<summary>Previous story versions</summary>`,
-        "",
-        ...existingCommentLines,
-        `</details>`
-      ].join('\n');
 
       await octokit.rest.issues.updateComment({
         ...context.repo,
         comment_id: existingComment.id,
-        body: body
+        body
       });
     }
     else {
-      const body = [
-        `## [${issueDetails.key}](${getInput("jira-base-url")}/browse/${issueDetails.key})`,
-        `### ${issueDetails.fields.summary} [^${issueDetails.fields.description.version}]`,
-        description.result,
-        "",
-        `[^${issueDetails.fields.description.version}]: Version ${issueDetails.fields.description.version}`
-      ].join('\n');
+      console.debug("Creating a new comment with story summary...");
 
       await octokit.rest.issues.createComment({
         ...context.repo,
@@ -117,8 +82,63 @@ async function execute() {
   }
 };
 
+async function init() {
+  const jiraKey = getInput("JIRA_KEY");
+  
+  if(!jiraKey.includes('-')) {
+    if(!context.payload.pull_request)
+      return setFailed("Partial Jira key can only be used in pull requests!");
+
+    const pullRequest = await octokit.rest.pulls.get({
+      ...context.repo,
+      pull_number: context.payload.pull_request.number,
+    });
+
+    const inputs = [
+      pullRequest.data.head.ref,
+      pullRequest.data.title,
+      pullRequest.data.body
+    ];
+
+    const regex = new RegExp(`${jiraKey}-([0-9]{1,6})`, 'g');
+
+    const storyKeys: string[] = [];
+
+    for(let input of inputs) {
+      const matches = regex.exec(input ?? "");
+
+      if(matches?.length) {
+        storyKeys.push(matches[0]);
+
+        continue;
+      }
+    }
+
+    if(!storyKeys.length) {
+      if(getInput("JIRA_PARTIAL_KEY_SILENT_FAILURE")) {
+        console.error("Failed to find a Jira key starting with " + jiraKey);
+
+        console.info("Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true.");
+      }
+      else
+        setFailed("Failed to find a Jira key starting with " + jiraKey);
+
+      return;
+    }
+
+    if(getInput("JIRA_KEY_MULTIPLE")) {
+      for(let storyKey of storyKeys)
+        execute(storyKey);
+    }
+    else
+      execute(storyKeys[0]);
+  }
+  else
+    execute(jiraKey);
+};
+
 try {
-  execute();
+  init();
 }
 catch(error) {
   if(error instanceof Error || typeof error === "string")

@@ -2,7 +2,7 @@ import { getInput } from "@actions/core";
 import getInputToken from "./getInputToken";
 
 export default async function sendRequest<T = Record<string, any>>(method: string, path: string): Promise<T> {
-  const url = new URL(path, getInput("jira-base-url"));
+  const url = new URL(path, getInput("JIRA_BASE_URL"));
 
   const response = await fetch(url, {
     method,
