@@ -7,7 +7,7 @@ export type GetIssueDetailsParameters = {
 };
 
 export default async function getIssueDetails(issue: string) {
-  const fields = [ "summary", "description", "issuelinks" ];
+  const fields = [ "summary", "description" ];
 
   return sendRequest("GET", `/rest/api/3/issue/${issue}?fields=${fields.join(',')}`);
 };

@@ -44,15 +44,77 @@ async function execute() {
     console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
     if (github_1.context.payload.pull_request) {
         const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
-        octokit.rest.issues.createComment({
+        const comments = await octokit.rest.issues.listComments({
             ...github_1.context.repo,
-            issue_number: github_1.context.payload.pull_request.number,
-            body: [
-                `## [Jira story ${issueDetails.key} summary](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
-                `### ${issueDetails.fields.summary}`,
-                description.result
-            ].join('\n')
+            issue_number: github_1.context.payload.pull_request.number
         });
+        const existingComment = comments.data.find((comment) => {
+            if (!comment.body)
+                return false;
+            const lines = comment.body.split('\n');
+            if (!lines.length)
+                return false;
+            if (!lines[0].startsWith(`## [${issueDetails.key}]`))
+                return false;
+            if (!lines[1].startsWith("###"))
+                return false;
+            return true;
+        });
+        if (existingComment) {
+            const existingCommentLines = existingComment.body.split('\n');
+            let existingCommentBody;
+            if (existingCommentLines.find((line) => line === "---")) {
+                const summaryLineIndex = existingCommentLines.findIndex((line) => line === '<summary>Previous story versions</summary>');
+                existingCommentBody = [
+                    ...existingCommentLines.slice(1),
+                    "",
+                    ...existingCommentLines.slice(summaryLineIndex, existingCommentLines.length - 1)
+                ];
+            }
+            else {
+                const currentCommentBody = existingCommentLines.slice(1);
+                currentCommentBody[0] += ` [^${issueDetails.fields.description.version - 1}]`;
+                existingCommentBody = [
+                    ...currentCommentBody.map((line) => "> " + line),
+                    "",
+                    ...existingCommentLines.slice(1).map((line) => '> ' + line)
+                ];
+            }
+            const body = [
+                `## [${issueDetails.key}](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
+                `### ${issueDetails.fields.summary} [^${issueDetails.fields.description.version}]`,
+                description.result,
+                "",
+                ...Array(issueDetails.fields.description.version).fill(null).map((_, index) => {
+                    return `[^${index + 1}]: Version ${index + 1}`;
+                }),
+                "",
+                `<details>`,
+                `<summary>Previous story versions</summary>`,
+                "",
+                ...existingCommentLines,
+                `</details>`
+            ].join('\n');
+            await octokit.rest.issues.updateComment({
+                ...github_1.context.repo,
+                comment_id: existingComment.id,
+                body: body
+            });
+        }
+        else {
+            const body = [
+                `## [${issueDetails.key}](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
+                `### ${issueDetails.fields.summary} [^${issueDetails.fields.description.version}]`,
+                description.result,
+                "",
+                `[^${issueDetails.fields.description.version}]: Version ${issueDetails.fields.description.version}`
+            ].join('\n');
+            await octokit.rest.issues.createComment({
+                ...github_1.context.repo,
+                issue_number: github_1.context.payload.pull_request.number,
+                body
+            });
+        }
     }
 }
 ;
