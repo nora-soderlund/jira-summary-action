@@ -1,10 +1,12 @@
 on:
   issue_comment:
+    types: [ created ]
   pull_request:
     types: [ opened, closed, synchronize, edited ]
 
 jobs:
   run-jira-summary-action:
+    if: ${{ github.event.issue.pull_request }}
     runs-on: ubuntu-latest
     name: Get Jira story summary
     permissions:
