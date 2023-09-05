@@ -60,57 +60,21 @@ async function execute() {
                 return false;
             return true;
         });
-        if (existingComment) {
-            if (existingComment.body?.includes(`[^${issueDetails.fields.description.version}]`))
-                return;
-            const existingCommentLines = existingComment.body.split('\n');
-            let existingCommentBody;
-            if (existingCommentLines.find((line) => line === "---")) {
-                const summaryLineIndex = existingCommentLines.findIndex((line) => line === '<summary>Previous story versions</summary>');
-                existingCommentBody = [
-                    ...existingCommentLines.slice(1),
-                    "",
-                    ...existingCommentLines.slice(summaryLineIndex, existingCommentLines.length - 1)
-                ];
-            }
-            else {
-                const currentCommentBody = existingCommentLines.slice(1);
-                currentCommentBody[0] += ` [^${issueDetails.fields.description.version - 1}]`;
-                existingCommentBody = [
-                    ...currentCommentBody.map((line) => "> " + line),
-                    "",
-                    ...existingCommentLines.slice(1).map((line) => '> ' + line)
-                ];
-            }
-            const body = [
-                `## [${issueDetails.key}](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
-                `### ${issueDetails.fields.summary} [^${issueDetails.fields.description.version}]`,
-                description.result,
-                "",
-                ...Array(issueDetails.fields.description.version).fill(null).map((_, index) => {
-                    return `[^${index + 1}]: Version ${index + 1}`;
-                }),
-                "",
-                `<details>`,
-                `<summary>Previous story versions</summary>`,
-                "",
-                ...existingCommentLines,
-                `</details>`
-            ].join('\n');
+        const body = [
+            `## [${issueDetails.key}](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
+            `### ${issueDetails.fields.summary}`,
+            description.result,
+            "",
+            `[^${issueDetails.fields.description.version}]: Version ${issueDetails.fields.description.version}`
+        ].join('\n');
+        if (existingComment && existingComment.body !== body) {
             await octokit.rest.issues.updateComment({
                 ...github_1.context.repo,
                 comment_id: existingComment.id,
-                body: body
+                body
             });
         }
         else {
-            const body = [
-                `## [${issueDetails.key}](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
-                `### ${issueDetails.fields.summary}`,
-                description.result,
-                "",
-                `[^${issueDetails.fields.description.version}]: Version ${issueDetails.fields.description.version}`
-            ].join('\n');
             await octokit.rest.issues.createComment({
                 ...github_1.context.repo,
                 issue_number: github_1.context.payload.pull_request.number,
