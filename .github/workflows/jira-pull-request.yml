@@ -22,7 +22,7 @@ jobs:
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
           JIRA_USER_EMAIL: ${{ secrets.JIRA_USER_EMAIL }}
           JIRA_API_TOKEN: ${{ secrets.JIRA_API_TOKEN }}
-          JIRA_KEY: OM20-1075
+          JIRA_KEY: OM20
       
       - name: Print the summary
         run: echo "The title is ${{ steps.story.outputs.title }}"
