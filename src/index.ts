@@ -1,13 +1,12 @@
 import { getInput, setFailed, setOutput } from "@actions/core";
 import { getOctokit, context } from "@actions/github";
-import getInputToken from "./controllers/getInputToken";
 import getIssueDetails from "./controllers/issues/getIssueDetails";
 
 //@ts-expect-error
 import * as adf2md from "adf-to-md";
 
 async function execute() {
-  const jiraKey = getInput("jira-key");
+  const jiraKey = getInput("JIRA_KEY");
   
   if(!jiraKey.includes('-'))
     throw new Error("Feature not implemented.");
@@ -26,7 +25,7 @@ async function execute() {
   console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
 
   if(context.payload.pull_request) {
-    const octokit = getOctokit(getInput("github-token"));
+    const octokit = getOctokit(getInput("GITHUB_TOKEN"));
 
     const comments = await octokit.rest.issues.listComments({
       ...context.repo,
@@ -52,7 +51,7 @@ async function execute() {
     });
 
     const body = [
-      `## [${issueDetails.key}](${getInput("jira-base-url")}/browse/${issueDetails.key})`,
+      `## [${issueDetails.key}](${getInput("JIRA_BASE_URL")}/browse/${issueDetails.key})`,
       `### ${issueDetails.fields.summary}`,
       description.result,
       "",

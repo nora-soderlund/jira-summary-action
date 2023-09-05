@@ -32,7 +32,7 @@ const getIssueDetails_1 = __importDefault(require("./controllers/issues/getIssue
 //@ts-expect-error
 const adf2md = __importStar(require("adf-to-md"));
 async function execute() {
-    const jiraKey = (0, core_1.getInput)("jira-key");
+    const jiraKey = (0, core_1.getInput)("JIRA_KEY");
     if (!jiraKey.includes('-'))
         throw new Error("Feature not implemented.");
     const payload = JSON.stringify(github_1.context.payload, undefined, 2);
@@ -43,7 +43,7 @@ async function execute() {
     (0, core_1.setOutput)("description", description.result);
     console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
     if (github_1.context.payload.pull_request) {
-        const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("github-token"));
+        const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
         const comments = await octokit.rest.issues.listComments({
             ...github_1.context.repo,
             issue_number: github_1.context.payload.pull_request.number
@@ -61,7 +61,7 @@ async function execute() {
             return true;
         });
         const body = [
-            `## [${issueDetails.key}](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
+            `## [${issueDetails.key}](${(0, core_1.getInput)("JIRA_BASE_URL")}/browse/${issueDetails.key})`,
             `### ${issueDetails.fields.summary}`,
             description.result,
             "",

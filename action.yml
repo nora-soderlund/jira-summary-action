@@ -1,23 +1,23 @@
 name: Jira summary Action
 description: Posts a comment with the summary of a linked Jira story.
 inputs:
-  jira-base-url:
+  JIRA_BASE_URL:
     description: The Jira base url
     required: true
 
-  jira-user-email:
+  JIRA_USER_EMAIL:
     description: The Jira user email
     required: true
 
-  jira-api-token:
+  JIRA_API_TOKEN:
     description: The Jira API token for the specified user email
     required: true
 
-  jira-key:
+  JIRA_KEY:
     description: The project key prefix to look for - or the full story key.
     required: true
 
-  github-token:
+  GITHUB_TOKEN:
     description: The GitHub Token to use, e.g. GITHUB_TOKEN
     required: true
 
