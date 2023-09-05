@@ -40,7 +40,7 @@ try {
     (0, getIssueDetails_1.default)(jiraKey).then((issueDetails) => {
         console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
         const description = adf2md.convert(issueDetails.fields.description);
-        console.log("Markdown: " + description);
+        console.log("Markdown: " + description.result);
         (0, core_1.setOutput)("title", "Hello world!");
     });
 }

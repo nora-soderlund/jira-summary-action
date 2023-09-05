@@ -21,7 +21,7 @@ try {
 
     const description = adf2md.convert(issueDetails.fields.description);
 
-    console.log("Markdown: " + description);
+    console.log("Markdown: " + description.result);
 
     setOutput("title", "Hello world!");
   });
