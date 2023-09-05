@@ -31,18 +31,33 @@ const github_1 = require("@actions/github");
 const getIssueDetails_1 = __importDefault(require("./controllers/issues/getIssueDetails"));
 //@ts-expect-error
 const adf2md = __importStar(require("adf-to-md"));
-try {
+async function execute() {
     const jiraKey = (0, core_1.getInput)("jira-key");
     if (!jiraKey.includes('-'))
         throw new Error("Feature not implemented.");
     const payload = JSON.stringify(github_1.context.payload, undefined, 2);
     console.log(`The event payload: ${payload}`);
-    (0, getIssueDetails_1.default)(jiraKey).then((issueDetails) => {
-        console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
-        const description = adf2md.convert(issueDetails.fields.description);
-        console.log("Markdown: " + description.result);
-        (0, core_1.setOutput)("title", "Hello world!");
-    });
+    const issueDetails = await (0, getIssueDetails_1.default)(jiraKey);
+    const description = adf2md.convert(issueDetails.fields.description);
+    (0, core_1.setOutput)("title", issueDetails.fields.summary);
+    (0, core_1.setOutput)("description", description.result);
+    console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
+    if (github_1.context.payload.pull_request) {
+        const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
+        octokit.rest.issues.createComment({
+            ...github_1.context.repo,
+            issue_number: github_1.context.payload.pull_request.number,
+            body: [
+                `## [Jira story ${issueDetails.key} summary](${(0, core_1.getInput)("jira-base-url")}/browse/${issueDetails.key})`,
+                `### ${issueDetails.fields.summary}`,
+                description.result
+            ].join('\n')
+        });
+    }
+}
+;
+try {
+    execute();
 }
 catch (error) {
     if (error instanceof Error || typeof error === "string")

@@ -1,14 +1,14 @@
 import { getInput, setFailed, setOutput } from "@actions/core";
-import { context } from "@actions/github";
+import { getOctokit, context } from "@actions/github";
 import getInputToken from "./controllers/getInputToken";
 import getIssueDetails from "./controllers/issues/getIssueDetails";
 
 //@ts-expect-error
 import * as adf2md from "adf-to-md";
 
-try {
+async function execute() {
   const jiraKey = getInput("jira-key");
-
+  
   if(!jiraKey.includes('-'))
     throw new Error("Feature not implemented.");
 
@@ -16,15 +16,32 @@ try {
   
   console.log(`The event payload: ${payload}`);
 
-  getIssueDetails(jiraKey).then((issueDetails) => {
-    console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
+  const issueDetails = await getIssueDetails(jiraKey);
 
-    const description = adf2md.convert(issueDetails.fields.description);
+  const description = adf2md.convert(issueDetails.fields.description);
 
-    console.log("Markdown: " + description.result);
+  setOutput("title", issueDetails.fields.summary);
+  setOutput("description", description.result);
 
-    setOutput("title", "Hello world!");
-  });
+  console.log("Issue details: " + JSON.stringify(issueDetails, undefined, 2));
+
+  if(context.payload.pull_request) {
+    const octokit = getOctokit(getInput("GITHUB_TOKEN"));
+
+    octokit.rest.issues.createComment({
+      ...context.repo,
+      issue_number: context.payload.pull_request.number,
+      body: [
+        `## [Jira story ${issueDetails.key} summary](${getInput("jira-base-url")}/browse/${issueDetails.key})`,
+        `### ${issueDetails.fields.summary}`,
+        description.result
+      ].join('\n')
+    });
+  }
+};
+
+try {
+  execute();
 }
 catch(error) {
   if(error instanceof Error || typeof error === "string")

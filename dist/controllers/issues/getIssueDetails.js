@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const sendRequest_1 = __importDefault(require("../sendRequest"));
 async function getIssueDetails(issue) {
-    const fields = ["summary", "description"];
+    const fields = ["summary", "description", "issuelinks"];
     return (0, sendRequest_1.default)("GET", `/rest/api/3/issue/${issue}?fields=${fields.join(',')}`);
 }
 exports.default = getIssueDetails;
