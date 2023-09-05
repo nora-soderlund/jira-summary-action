@@ -1,5 +1,9 @@
 name: nora-soderlund/jira-summary-action
 description: Posts a pull request comment with the summary of linked Jira stories.
+
+icon: info
+color: blue
+
 inputs:
   JIRA_BASE_URL:
     description: The Jira base url
