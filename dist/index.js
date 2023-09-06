@@ -32,13 +32,22 @@ const getIssueDetails_1 = __importDefault(require("./controllers/issues/getIssue
 //@ts-expect-error
 const adf2md = __importStar(require("adf-to-md"));
 const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
+async function getDescription(description) {
+    try {
+        return adf2md.convert(description).result;
+    }
+    catch {
+        return `*No description available.*`;
+    }
+}
+;
 async function execute(storyKey) {
     console.debug("Getting the story detail from Jira...");
     const issueDetails = await (0, getIssueDetails_1.default)(storyKey);
-    const description = adf2md.convert(issueDetails.fields.description);
+    const description = getDescription(issueDetails.fields.description);
     if ((0, core_1.getInput)("JIRA_KEY_MULTIPLE") !== "") {
         (0, core_1.setOutput)("title", issueDetails.fields.summary);
-        (0, core_1.setOutput)("description", description.result);
+        (0, core_1.setOutput)("description", description);
     }
     if (github_1.context.payload.pull_request) {
         if ((0, core_1.getInput)("DISABLE_PULL_REQUEST_COMMENT") !== "") {
@@ -65,7 +74,7 @@ async function execute(storyKey) {
         const body = [
             `## [${issueDetails.key}](${(0, core_1.getInput)("JIRA_BASE_URL")}/browse/${issueDetails.key})`,
             `### ${issueDetails.fields.summary}`,
-            description.result
+            description
         ].join('\n');
         if (existingComment) {
             console.debug("Existing comment exists for story.");

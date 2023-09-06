@@ -7,16 +7,25 @@ import * as adf2md from "adf-to-md";
 
 const octokit = getOctokit(getInput("GITHUB_TOKEN"));
 
+async function getDescription(description: any) {
+ try {
+  return adf2md.convert(description).result;
+ }
+ catch {
+  return `*No description available.*`;
+ }
+};
+
 async function execute(storyKey: string) {
   console.debug("Getting the story detail from Jira...");
 
   const issueDetails = await getIssueDetails(storyKey);
 
-  const description = adf2md.convert(issueDetails.fields.description);
+  const description = getDescription(issueDetails.fields.description);
 
   if(getInput("JIRA_KEY_MULTIPLE") !== "") {
     setOutput("title", issueDetails.fields.summary);
-    setOutput("description", description.result);
+    setOutput("description", description);
   }
   
   if(context.payload.pull_request) {
@@ -54,7 +63,7 @@ async function execute(storyKey: string) {
     const body = [
       `## [${issueDetails.key}](${getInput("JIRA_BASE_URL")}/browse/${issueDetails.key})`,
       `### ${issueDetails.fields.summary}`,
-      description.result
+      description
     ].join('\n');
 
     if(existingComment) {
