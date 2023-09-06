@@ -7,7 +7,7 @@ import * as adf2md from "adf-to-md";
 
 const octokit = getOctokit(getInput("GITHUB_TOKEN"));
 
-async function getDescription(description: any) {
+function getDescription(description: any) {
  try {
   return adf2md.convert(description).result;
  }

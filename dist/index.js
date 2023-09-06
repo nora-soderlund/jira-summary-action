@@ -32,7 +32,7 @@ const getIssueDetails_1 = __importDefault(require("./controllers/issues/getIssue
 //@ts-expect-error
 const adf2md = __importStar(require("adf-to-md"));
 const octokit = (0, github_1.getOctokit)((0, core_1.getInput)("GITHUB_TOKEN"));
-async function getDescription(description) {
+function getDescription(description) {
     try {
         return adf2md.convert(description).result;
     }
