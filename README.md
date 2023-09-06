@@ -7,7 +7,7 @@ This is a GitHub Action that allows you to fetch the summary and description of 
 Add the action to your pull request workflow, which searches for Jira story keys with the project key `ABC`:
 ```yml
   - name: Get summary from Jira
-    uses: nora-soderlund/jira-summary-action@v0.9.1
+    uses: nora-soderlund/jira-summary-action@v0.9.2
     with:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
@@ -47,7 +47,7 @@ jobs:
       
       - id: story
         name: Get summary from Jira
-        uses: nora-soderlund/jira-summary-action@v0.9.1
+        uses: nora-soderlund/jira-summary-action@v0.9.2
         with:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           JIRA_BASE_URL: ${{ secrets.JIRA_BASE_URL }}
