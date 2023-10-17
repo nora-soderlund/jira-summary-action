@@ -8,13 +8,12 @@ import * as adf2md from "adf-to-md";
 const octokit = getOctokit(getInput("GITHUB_TOKEN"));
 
 function getDescription(description: any) {
- try {
-  return adf2md.convert(description).result;
- }
- catch {
-  return `*No description available.*`;
- }
-};
+  try {
+    return adf2md.convert(description).result;
+  } catch {
+    return `*No description available.*`;
+  }
+}
 
 async function execute(storyKey: string) {
   console.debug("Getting the story detail from Jira...");
@@ -23,14 +22,16 @@ async function execute(storyKey: string) {
 
   const description = getDescription(issueDetails.fields.description);
 
-  if(getInput("JIRA_KEY_MULTIPLE") !== "") {
+  if (getInput("JIRA_KEY_MULTIPLE") !== "") {
     setOutput("title", issueDetails.fields.summary);
     setOutput("description", description);
   }
-  
-  if(context.payload.pull_request) {
-    if(getInput("DISABLE_PULL_REQUEST_COMMENT") !== "") {
-      console.info("Not creating or update any comments because DISABLE_PULL_REQUEST_COMMENT is true.");
+
+  if (context.payload.pull_request) {
+    if (getInput("DISABLE_PULL_REQUEST_COMMENT") !== "") {
+      console.info(
+        "Not creating or update any comments because DISABLE_PULL_REQUEST_COMMENT is true."
+      );
 
       return;
     }
@@ -39,38 +40,38 @@ async function execute(storyKey: string) {
 
     const comments = await octokit.rest.issues.listComments({
       ...context.repo,
-      issue_number: context.payload.pull_request.number
+      issue_number: context.payload.pull_request.number,
     });
 
     const existingComment = comments.data.find((comment) => {
-      if(!comment.body)
-        return false;
+      if (!comment.body) return false;
 
-      const lines = comment.body.split('\n');
+      const lines = comment.body.split("\n");
 
-      if(!lines.length)
-        return false;
+      if (!lines.length) return false;
 
-      if(!lines[0].startsWith(`## [${issueDetails.key}]`))
-        return false;
+      if (!lines[0].startsWith(`## [${issueDetails.key}]`)) return false;
 
-      if(!lines[1].startsWith("###"))
-        return false;
+      if (!lines[1].startsWith("###")) return false;
 
       return true;
     });
 
     const body = [
-      `## [${issueDetails.key}](${getInput("JIRA_BASE_URL")}/browse/${issueDetails.key})`,
+      `## [${issueDetails.key}](${getInput("JIRA_BASE_URL")}/browse/${
+        issueDetails.key
+      })`,
       `### ${issueDetails.fields.summary}`,
-      description
-    ].join('\n');
+      description,
+    ].join("\n");
 
-    if(existingComment) {
+    if (existingComment) {
       console.debug("Existing comment exists for story.");
 
-      if(existingComment.body === body) {
-        console.info("Skipping updating previous comment because content is the same.");
+      if (existingComment.body === body) {
+        console.info(
+          "Skipping updating previous comment because content is the same."
+        );
 
         return;
       }
@@ -78,26 +79,25 @@ async function execute(storyKey: string) {
       await octokit.rest.issues.updateComment({
         ...context.repo,
         comment_id: existingComment.id,
-        body
+        body,
       });
-    }
-    else {
+    } else {
       console.debug("Creating a new comment with story summary...");
 
       await octokit.rest.issues.createComment({
         ...context.repo,
         issue_number: context.payload.pull_request.number,
-        body 
+        body,
       });
     }
   }
-};
+}
 
 async function init() {
   const jiraKey = getInput("JIRA_KEY");
-  
-  if(!jiraKey.includes('-')) {
-    if(!context.payload.pull_request)
+
+  if (!jiraKey.includes("-")) {
+    if (!context.payload.pull_request)
       return setFailed("Partial Jira key can only be used in pull requests!");
 
     const pullRequest = await octokit.rest.pulls.get({
@@ -105,55 +105,63 @@ async function init() {
       pull_number: context.payload.pull_request.number,
     });
 
+    const ignore_branches = getInput("IGNORE_BRANCHES");
+
+    if (ignore_branches) {
+
+      const ignore_pattern = new RegExp(ignore_branches);
+
+      const match = ignore_pattern.exec(pullRequest.data.head.ref ?? "");
+
+      if (match?.length) {
+        console.info("Skip adding Jira summary because source branch is to be ignored");
+        return;
+      }
+    }
+
     const inputs = [
       pullRequest.data.head.ref,
       pullRequest.data.title,
-      pullRequest.data.body
+      pullRequest.data.body,
     ];
 
-    const regex = new RegExp(`${jiraKey}-([0-9]{1,6})`, 'g');
+    const regex = new RegExp(`${jiraKey}-([0-9]{1,6})`, "g");
 
     const storyKeys: string[] = [];
 
-    for(let input of inputs) {
+    for (let input of inputs) {
       const matches = regex.exec(input ?? "");
 
-      if(matches?.length) {
+      if (matches?.length) {
         storyKeys.push(matches[0]);
 
         continue;
       }
     }
 
-    if(!storyKeys.length) {
-      if(getInput("JIRA_PARTIAL_KEY_SILENT_FAILURE") !== "") {
+    if (!storyKeys.length) {
+      if (getInput("JIRA_PARTIAL_KEY_SILENT_FAILURE") !== "") {
         console.error("Failed to find a Jira key starting with " + jiraKey);
 
-        console.info("Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true.");
-      }
-      else
+        console.info(
+          "Executing silent error because JIRA_PARTIAL_KEY_SILENT_FAILURE is true."
+        );
+      } else {
         setFailed("Failed to find a Jira key starting with " + jiraKey);
+      }
 
       return;
     }
 
-    if(getInput("JIRA_KEY_MULTIPLE") !== "") {
-      for(let storyKey of storyKeys)
-        execute(storyKey);
-    }
-    else
-      execute(storyKeys[0]);
-  }
-  else
-    execute(jiraKey);
-};
+    if (getInput("JIRA_KEY_MULTIPLE") !== "") {
+      for (let storyKey of storyKeys) execute(storyKey);
+    } else execute(storyKeys[0]);
+  } else execute(jiraKey);
+}
 
 try {
   init();
-}
-catch(error) {
-  if(error instanceof Error || typeof error === "string")
-    setFailed(error);
-  else
-    setFailed("Unknown error: " + error);
+} catch (error) {
+  if (error instanceof Error || typeof error === "string") setFailed(error);
+  else setFailed("Unknown error: " + error);
 }
