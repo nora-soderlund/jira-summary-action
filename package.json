@@ -1,6 +1,6 @@
 {
   "name": "jira-summary-action",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "description": "A GitHub Action that posts the summary of a linked Jira story in pull requests.",
   "main": "dist/index.js",
   "scripts": {
