@@ -73,6 +73,7 @@ jobs:
 | JIRA_KEY_MULTIPLE | Boolean | false | If true and JIRA_KEY is a project key, post a comment for every story key found. |
 | JIRA_PARTIAL_KEY_SILENT_FAILURE | Boolean | false | If true, not finding a story key in a pull request if a project key is specified, only throws a silent error. |
 | DISABLE_PULL_REQUEST_COMMENT | Boolean | false | If true, using the action will not create or update a pull request comment. Useful for only fetching the issue details from the output. |
+| IGNORE_BRANCHES | Regex | - | If source branch name mathces this regex ignore pull request. |
 
 ### Outputs
 | Output | Type | Description |
