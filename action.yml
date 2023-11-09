@@ -39,6 +39,9 @@ inputs:
     description: If source branch name mathces this regex ignore pull request.
 
 outputs:
+  key:
+    description: The key of the Jira story.
+
   title:
     description: The title of the Jira story.
 

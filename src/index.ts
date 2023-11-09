@@ -22,7 +22,8 @@ async function execute(storyKey: string) {
 
   const description = getDescription(issueDetails.fields.description);
 
-  if (getInput("JIRA_KEY_MULTIPLE") !== "") {
+  if (getInput("JIRA_KEY_MULTIPLE") === "") {
+    setOutput("key", storyKey);
     setOutput("title", issueDetails.fields.summary);
     setOutput("description", description);
   }

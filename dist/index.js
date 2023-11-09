@@ -44,7 +44,8 @@ async function execute(storyKey) {
     console.debug("Getting the story detail from Jira...");
     const issueDetails = await (0, getIssueDetails_1.default)(storyKey);
     const description = getDescription(issueDetails.fields.description);
-    if ((0, core_1.getInput)("JIRA_KEY_MULTIPLE") !== "") {
+    if ((0, core_1.getInput)("JIRA_KEY_MULTIPLE") === "") {
+        (0, core_1.setOutput)("key", storyKey);
         (0, core_1.setOutput)("title", issueDetails.fields.summary);
         (0, core_1.setOutput)("description", description);
     }
