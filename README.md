@@ -78,6 +78,7 @@ jobs:
 ### Outputs
 | Output | Type | Description |
 | ------ | ---- | ----------- |
+| key | String | Matched JIRA key. |
 | title | String | If JIRA_KEY_MULTIPLE is false, the title of the linked story. |
 | description | String | If JIRA_KEY_MULTIPLE is false, the description of the linked story in markdown. |
 
